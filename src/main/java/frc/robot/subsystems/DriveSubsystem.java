@@ -4,47 +4,41 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
-import edu.wpi.first.wpilibj.Encoder;
+import com.kauailabs.navx.frc.AHRS;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
+
+import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import frc.robot.Constants.DriveConstants;
-import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
+  // Create CAN motor objects
+  private CANSparkMax leftFrontSparkMax = new CANSparkMax(DriveConstants.kLeftFrontCAN, MotorType.kBrushless);
+  private CANSparkMax leftRearSparkMax = new CANSparkMax(DriveConstants.kLeftRearCAN, MotorType.kBrushless);
+  private CANSparkMax rightFrontSparkMax = new CANSparkMax(DriveConstants.kRightFrontCAN, MotorType.kBrushless);
+  private CANSparkMax rightRearSparkMax = new CANSparkMax(DriveConstants.kRightRearCAN, MotorType.kBrushless);
+
   // The motors on the left side of the drive.
   private final MotorControllerGroup m_leftMotors =
-      new MotorControllerGroup(
-          new PWMSparkMax(DriveConstants.kLeftMotor1Port),
-          new PWMSparkMax(DriveConstants.kLeftMotor2Port));
+      new MotorControllerGroup(leftFrontSparkMax, leftRearSparkMax);
 
   // The motors on the right side of the drive.
   private final MotorControllerGroup m_rightMotors =
-      new MotorControllerGroup(
-          new PWMSparkMax(DriveConstants.kRightMotor1Port),
-          new PWMSparkMax(DriveConstants.kRightMotor2Port));
+      new MotorControllerGroup(rightFrontSparkMax, rightRearSparkMax);
 
   // The robot's drive
   private final DifferentialDrive m_drive = new DifferentialDrive(m_leftMotors, m_rightMotors);
 
-  // The left-side drive encoder
-  private final Encoder m_leftEncoder =
-      new Encoder(
-          DriveConstants.kLeftEncoderPorts[0],
-          DriveConstants.kLeftEncoderPorts[1],
-          DriveConstants.kLeftEncoderReversed);
-
-  // The right-side drive encoder
-  private final Encoder m_rightEncoder =
-      new Encoder(
-          DriveConstants.kRightEncoderPorts[0],
-          DriveConstants.kRightEncoderPorts[1],
-          DriveConstants.kRightEncoderReversed);
+  // Access the encoder count inside the SparkMax
+  RelativeEncoder m_leftEncoder = leftFrontSparkMax.getEncoder();
+  RelativeEncoder m_rightEncoder = rightFrontSparkMax.getEncoder();
 
   // The gyro sensor
-  private final Gyro m_gyro = new ADXRS450_Gyro();
+  private final AHRS m_gyro = new AHRS(SerialPort.Port.kUSB);
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
@@ -54,8 +48,11 @@ public class DriveSubsystem extends SubsystemBase {
     m_rightMotors.setInverted(true);
 
     // Sets the distance per pulse for the encoders
-    m_leftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
-    m_rightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+    m_leftEncoder.setPositionConversionFactor(DriveConstants.kEncoderDistancePerRevolution);
+    m_rightEncoder.setPositionConversionFactor(DriveConstants.kEncoderDistancePerRevolution);
+
+    // Set default max speed
+    m_drive.setMaxOutput(DriveConstants.kMaxDriveOutput);
   }
 
   /**
@@ -70,8 +67,8 @@ public class DriveSubsystem extends SubsystemBase {
 
   /** Resets the drive encoders to currently read a position of 0. */
   public void resetEncoders() {
-    m_leftEncoder.reset();
-    m_rightEncoder.reset();
+    m_leftEncoder.setPosition(0.0);
+    m_rightEncoder.setPosition(0.0);
   }
 
   /**
@@ -80,7 +77,7 @@ public class DriveSubsystem extends SubsystemBase {
    * @return the average of the two encoder readings
    */
   public double getAverageEncoderDistance() {
-    return (m_leftEncoder.getDistance() + m_rightEncoder.getDistance()) / 2.0;
+    return (m_leftEncoder.getPosition() + m_rightEncoder.getPosition()) / 2.0;
   }
 
   /**
@@ -88,7 +85,7 @@ public class DriveSubsystem extends SubsystemBase {
    *
    * @return the left drive encoder
    */
-  public Encoder getLeftEncoder() {
+  public RelativeEncoder getLeftEncoder() {
     return m_leftEncoder;
   }
 
@@ -97,7 +94,7 @@ public class DriveSubsystem extends SubsystemBase {
    *
    * @return the right drive encoder
    */
-  public Encoder getRightEncoder() {
+  public RelativeEncoder getRightEncoder() {
     return m_rightEncoder;
   }
 

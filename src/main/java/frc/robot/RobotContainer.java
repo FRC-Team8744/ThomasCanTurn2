@@ -4,9 +4,8 @@
 
 package frc.robot;
 
-import static edu.wpi.first.wpilibj.PS4Controller.Button;
-
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
@@ -30,7 +29,7 @@ public class RobotContainer {
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
 
   // The driver's controller
-  PS4Controller m_driverController = new PS4Controller(OIConstants.kDriverControllerPort);
+  public final Joystick m_driverController = new Joystick(OIConstants.kDriverControllerPort);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -45,7 +44,7 @@ public class RobotContainer {
         new RunCommand(
             () ->
                 m_robotDrive.arcadeDrive(
-                    -m_driverController.getLeftY(), -m_driverController.getRightX()),
+                    -m_driverController.getY(), -m_driverController.getX()),
             m_robotDrive));
   }
 
@@ -57,12 +56,12 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     // Drive at half speed when the right bumper is held
-    new JoystickButton(m_driverController, Button.kR1.value)
-        .onTrue(new InstantCommand(() -> m_robotDrive.setMaxOutput(0.5)))
-        .onFalse(new InstantCommand(() -> m_robotDrive.setMaxOutput(1)));
+    new JoystickButton(m_driverController, OIConstants.kButtonRightBumper)
+        .onTrue(new InstantCommand(() -> m_robotDrive.setMaxOutput(0.2)))
+        .onFalse(new InstantCommand(() -> m_robotDrive.setMaxOutput(DriveConstants.kMaxDriveOutput)));
 
     // Stabilize robot to drive straight with gyro when left bumper is held
-    new JoystickButton(m_driverController, Button.kL1.value)
+    new JoystickButton(m_driverController, OIConstants.kButtonLeftBumper)
         .whileTrue(
             new PIDCommand(
                 new PIDController(
@@ -74,16 +73,16 @@ public class RobotContainer {
                 // Setpoint is 0
                 0,
                 // Pipe the output to the turning controls
-                output -> m_robotDrive.arcadeDrive(-m_driverController.getLeftY(), output),
+                output -> m_robotDrive.arcadeDrive(-m_driverController.getY(), output),
                 // Require the robot drive
                 m_robotDrive));
 
     // Turn to 90 degrees when the 'X' button is pressed, with a 5 second timeout
-    new JoystickButton(m_driverController, Button.kCross.value)
+    new JoystickButton(m_driverController, OIConstants.kButtonX)
         .onTrue(new TurnToAngle(90, m_robotDrive).withTimeout(5));
 
     // Turn to -90 degrees with a profile when the Circle button is pressed, with a 5 second timeout
-    new JoystickButton(m_driverController, Button.kCircle.value)
+    new JoystickButton(m_driverController, OIConstants.kButtonY)
         .onTrue(new TurnToAngleProfiled(-90, m_robotDrive).withTimeout(5));
   }
 
