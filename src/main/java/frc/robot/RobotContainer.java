@@ -7,8 +7,10 @@ package frc.robot;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.commands.TurnSimplePID;
 import frc.robot.commands.TurnToAngle;
 import frc.robot.commands.TurnToAngleProfiled;
 import frc.robot.subsystems.DriveSubsystem;
@@ -35,6 +37,10 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the button bindings
     configureButtonBindings();
+
+    // Debug information
+    SmartDashboard.putData(m_robotDrive.m_gyro);
+    SmartDashboard.putData(m_robotDrive);
 
     // Configure default commands
     // Set the default drive command to split-stick arcade drive
@@ -77,6 +83,12 @@ public class RobotContainer {
                 // Require the robot drive
                 m_robotDrive));
 
+    new JoystickButton(m_driverController, OIConstants.kButtonA)
+    .onTrue(new TurnSimplePID(-45, m_robotDrive).withTimeout(5));
+    
+    new JoystickButton(m_driverController, OIConstants.kButtonB)
+    .onTrue(new TurnSimplePID(45, m_robotDrive).withTimeout(5));
+    
     // Turn to 90 degrees when the 'X' button is pressed, with a 5 second timeout
     new JoystickButton(m_driverController, OIConstants.kButtonX)
         .onTrue(new TurnToAngle(90, m_robotDrive).withTimeout(5));

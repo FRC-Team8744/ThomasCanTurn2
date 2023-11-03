@@ -38,7 +38,7 @@ public class DriveSubsystem extends SubsystemBase {
   RelativeEncoder m_rightEncoder = rightFrontSparkMax.getEncoder();
 
   // The gyro sensor
-  private final AHRS m_gyro = new AHRS(SerialPort.Port.kUSB);
+  public final AHRS m_gyro = new AHRS(SerialPort.Port.kUSB);
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
@@ -63,6 +63,32 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public void arcadeDrive(double fwd, double rot) {
     m_drive.arcadeDrive(fwd, rot);
+  }
+
+  /**
+   * Drives the robot using arcade controls.
+   *
+   * @param fwd the commanded forward movement
+   * @param rot the commanded rotation
+   * @param sqr are inputs squared?
+   */
+  public void arcadeDrive(double fwd, double rot, boolean sqr) {
+    m_drive.arcadeDrive(fwd, rot, sqr);
+  }
+
+  /**
+   * Controls the left and right sides of the drive directly with voltages.
+   *
+   * @param leftVolts the commanded left output
+   * @param rightVolts the commanded right output
+   */
+  public void tankDriveVolts(double leftVolts, double rightVolts) {
+    // SmartDashboard.putNumber("Left Voltage", leftVolts);
+    // SmartDashboard.putNumber("Right Voltage", rightVolts);
+
+    m_leftMotors.setVoltage(leftVolts);
+    m_rightMotors.setVoltage(rightVolts);
+    m_drive.feed();
   }
 
   /** Resets the drive encoders to currently read a position of 0. */

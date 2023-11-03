@@ -5,7 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+// import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
@@ -31,8 +31,8 @@ public class TurnToAngle extends PIDCommand {
         drive);
 
     // For debug, expose the PIDController so we can adjust it more easily
-    SmartDashboard.putData("Turn Controller", m_controller);
-    SmartDashboard.putNumber("Turn Error", m_controller.getPositionError());
+    // SmartDashboard.putData("Turn Controller", m_controller);
+    // SmartDashboard.putNumber("Turn Error", m_controller.getPositionError());
 
     // Set the controller to be continuous (because it is an angle controller)
     getController().enableContinuousInput(-180, 180);
